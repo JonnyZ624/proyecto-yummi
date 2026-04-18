@@ -59,3 +59,20 @@ class PedidoDetalle(models.Model):
 
     def __str__(self):
         return self.plato.nombre
+
+
+
+class PedidoDetalleIngrediente(models.Model):
+    detalle = models.ForeignKey(
+        'PedidoDetalle',
+        on_delete=models.CASCADE,
+        related_name='extras'
+    )
+    ingrediente = models.ForeignKey(
+        'Ingrediente',
+        on_delete=models.CASCADE
+    )
+    cantidad = models.IntegerField(default=1)
+
+    def __str__(self):
+        return f"{self.ingrediente.nombre} x{self.cantidad}"

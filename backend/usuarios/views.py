@@ -1,6 +1,6 @@
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
-from .models import Usuario, Plato, Pedido, PedidoDetalle, Ingrediente
+from .models import Usuario, Plato, Pedido, PedidoDetalle, Ingrediente, PedidoDetalleIngrediente
 
 
 # =========================
@@ -76,6 +76,7 @@ def obtener_platos(request):
             "descripcion": p.descripcion,
             "empresa": p.empresa,
 
+            # 🔥 INGREDIENTES
             "ingredientes": [
                 {
                     "id": i.id,
@@ -90,7 +91,7 @@ def obtener_platos(request):
 
 
 # =========================
-# CREAR PEDIDO
+# CREAR PEDIDO (🔥 PRO)
 # =========================
 @api_view(['POST'])
 def crear_pedido(request):
@@ -101,13 +102,11 @@ def crear_pedido(request):
     total = data.get("total")
     metodo_pago = data.get("metodo_pago")
 
-    # FACTURA
+    # 🔥 DATOS FACTURA
     nombre_cliente = data.get("nombre_cliente")
     ci = data.get("ci")
     ubicacion = data.get("ubicacion")
     telefono = data.get("telefono")
-
-    extras = data.get("extras", [])
 
     # =========================
     # VALIDACIONES
@@ -134,7 +133,9 @@ def crear_pedido(request):
     try:
         usuario = Usuario.objects.get(id=usuario_id)
 
+        # =========================
         # CREAR PEDIDO
+        # =========================
         pedido = Pedido.objects.create(
             usuario=usuario,
             total=total,
@@ -145,31 +146,85 @@ def crear_pedido(request):
             telefono=telefono
         )
 
-        # DETALLES
+        # =========================
+        # DETALLES + EXTRAS 🔥
+        # =========================
         for p in productos:
             plato = Plato.objects.get(id=p["id"])
 
-            PedidoDetalle.objects.create(
+            detalle = PedidoDetalle.objects.create(
                 pedido=pedido,
                 plato=plato,
                 cantidad=p.get("cantidad", 1)
             )
 
-        # EXTRAS (simple)
-        for e in extras:
-            try:
-                ingrediente = Ingrediente.objects.get(id=e["id"])
-                print(f"Extra agregado: {ingrediente.nombre}")
-            except:
-                pass
+            # 🔥 EXTRAS POR PRODUCTO
+            extras = p.get("extras", [])
 
-        return Response({"message": "Pedido guardado correctamente"})
+            for e in extras:
+                try:
+                    ingrediente = Ingrediente.objects.get(id=e["id"])
+
+                    PedidoDetalleIngrediente.objects.create(
+                        detalle=detalle,
+                        ingrediente=ingrediente,
+                        cantidad=e.get("cantidad", 1)
+                    )
+
+                except Ingrediente.DoesNotExist:
+                    pass
+
+        return Response({
+            "message": "Pedido guardado correctamente"
+        })
 
     except Usuario.DoesNotExist:
         return Response({"error": "Usuario no existe"}, status=400)
 
     except Plato.DoesNotExist:
         return Response({"error": "Plato no existe"}, status=400)
+
+    except Exception as e:
+        return Response({
+            "error": str(e)
+        }, status=400)
+
+
+
+# =========================
+# OBTENER ÚLTIMO PEDIDO
+# =========================
+@api_view(['GET'])
+def obtener_pedido_actual(request, usuario_id):
+    try:
+        pedido = Pedido.objects.filter(usuario_id=usuario_id).last()
+
+        if not pedido:
+            return Response({"error": "No hay pedidos"}, status=404)
+
+        detalles = []
+
+        for d in pedido.pedidodetalle_set.all():
+
+            extras = []
+            for e in d.extras.all():
+                extras.append({
+                    "nombre": e.ingrediente.nombre,
+                    "cantidad": e.cantidad
+                })
+
+            detalles.append({
+                "plato": d.plato.nombre,
+                "cantidad": d.cantidad,
+                "extras": extras
+            })
+
+        return Response({
+            "id": pedido.id,
+            "total": pedido.total,
+            "metodo_pago": pedido.metodo_pago,
+            "detalles": detalles
+        })
 
     except Exception as e:
         return Response({"error": str(e)}, status=400)

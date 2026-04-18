@@ -1,37 +1,76 @@
 from django.contrib import admin
-from .models import Usuario, Plato, Pedido, PedidoDetalle, Ingrediente
+from .models import (
+    Usuario,
+    Plato,
+    Pedido,
+    PedidoDetalle,
+    Ingrediente,
+    PedidoDetalleIngrediente  # 🔥 IMPORTANTE
+)
 
 
-# 🔥 INGREDIENTES DENTRO DE PLATO
+# =========================
+# INGREDIENTES EN PLATO
+# =========================
 class IngredienteInline(admin.TabularInline):
     model = Ingrediente
     extra = 1
 
 
-# 🔥 PERSONALIZAR PLATO
 class PlatoAdmin(admin.ModelAdmin):
     inlines = [IngredienteInline]
 
 
-# 🔥 USUARIO
+# =========================
+# USUARIO
+# =========================
 admin.site.register(Usuario)
 
-# 🔥 PLATO CON INGREDIENTES INLINE
+
+# =========================
+# PLATO
+# =========================
 admin.site.register(Plato, PlatoAdmin)
 
-# ❌ OPCIONAL: quitar Ingrediente separado
-# admin.site.register(Ingrediente)
+
+# =========================
+# 🔥 EXTRAS EN DETALLE
+# =========================
+class PedidoDetalleIngredienteInline(admin.TabularInline):
+    model = PedidoDetalleIngrediente
+    extra = 0
 
 
-# 🔥 PEDIDO
-class PedidoAdmin(admin.ModelAdmin):
-    list_display = ("id", "usuario", "total", "fecha", "metodo_pago")
-
-admin.site.register(Pedido, PedidoAdmin)
-
-
-# 🔥 DETALLE
+# =========================
+# 🔥 DETALLE (CON EXTRAS)
+# =========================
 class PedidoDetalleAdmin(admin.ModelAdmin):
-    list_display = ("pedido", "plato", "cantidad")
+    list_display = ("pedido", "plato", "cantidad", "tiene_extras")
+    inlines = [PedidoDetalleIngredienteInline]
+
+    def tiene_extras(self, obj):
+        return obj.extras.exists()
+
+    tiene_extras.boolean = True
+
 
 admin.site.register(PedidoDetalle, PedidoDetalleAdmin)
+
+
+# =========================
+# 🔥 DETALLE INLINE EN PEDIDO
+# =========================
+class PedidoDetalleInline(admin.TabularInline):
+    model = PedidoDetalle
+    extra = 0
+
+
+# =========================
+# 🔥 PEDIDO
+# =========================
+class PedidoAdmin(admin.ModelAdmin):
+    list_display = ("id", "usuario", "total", "fecha", "metodo_pago")
+    inlines = [PedidoDetalleInline]
+
+
+admin.site.register(Pedido, PedidoAdmin)

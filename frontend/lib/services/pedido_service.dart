@@ -5,6 +5,9 @@ import 'user_service.dart';
 
 class PedidoService {
 
+  // =========================
+  // 🚀 ENVIAR PEDIDO
+  // =========================
   static Future<bool> enviarPedido(
     String metodoPago,
     String nombre,
@@ -15,42 +18,37 @@ class PedidoService {
 
     final url = Uri.parse("http://10.0.2.2:8000/api/pedido/");
 
-    // 🚫 evitar enviar vacío
     if (CarritoService.carrito.isEmpty) {
       print("Carrito vacío ❌");
       return false;
     }
 
-    // 🧾 productos del carrito (con cantidad)
+    // 🔥 PRODUCTOS CON EXTRAS
     List productos = CarritoService.carrito.map((p) {
       return {
         "id": p["id"],
-        "cantidad": p["cantidad"] ?? 1
+        "cantidad": p["cantidad"] ?? 1,
+        "extras": p["extras"] ?? []
       };
     }).toList();
 
-    // 🔥 EXTRAS
-    List extras = [];
-
-    for (var p in CarritoService.carrito) {
-      if (p["extras"] != null) {
-        extras.addAll(p["extras"]);
-      }
-    }
-
-    // 💰 TOTAL CORRECTO
+    // 💰 TOTAL REAL
     double total = 0;
 
     for (var p in CarritoService.carrito) {
-      if (p["precio_total"] != null) {
-        // 🔥 ya incluye cantidad
-        total += double.parse(p["precio_total"].toString());
-      } else {
-        // 🔥 calcular manual
-        double precio = double.parse(p["precio"].toString());
-        int cantidad = p["cantidad"] ?? 1;
-        total += precio * cantidad;
+      double precioBase = double.parse(p["precio"].toString());
+
+      double extrasTotal = 0;
+      if (p["extras"] != null) {
+        for (var e in p["extras"]) {
+          extrasTotal += double.parse(e["precio"].toString()) *
+              (e["cantidad"] ?? 1);
+        }
       }
+
+      int cantidad = p["cantidad"] ?? 1;
+
+      total += (precioBase + extrasTotal) * cantidad;
     }
 
     final body = {
@@ -58,7 +56,6 @@ class PedidoService {
       "total": total,
       "metodo_pago": metodoPago,
       "productos": productos,
-      "extras": extras,
 
       // 🔥 FACTURA
       "nombre_cliente": nombre,
@@ -83,8 +80,34 @@ class PedidoService {
       return response.statusCode == 200;
 
     } catch (e) {
-      print("ERROR DE CONEXIÓN: $e");
+      print("ERROR: $e");
       return false;
     }
+  }
+
+
+  // =========================
+  // 📦 OBTENER PEDIDO ACTUAL
+  // =========================
+  static Future<Map<String, dynamic>?> obtenerPedidoActual() async {
+
+    final url = Uri.parse(
+        "http://10.0.2.2:8000/api/pedido/${UserService.userId}/");
+
+    try {
+      final response = await http.get(url);
+
+      print("GET PEDIDO STATUS: ${response.statusCode}");
+      print("GET PEDIDO BODY: ${response.body}");
+
+      if (response.statusCode == 200) {
+        return jsonDecode(response.body);
+      }
+
+    } catch (e) {
+      print("ERROR AL OBTENER PEDIDO: $e");
+    }
+
+    return null;
   }
 }
