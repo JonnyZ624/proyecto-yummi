@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:frontend/services/carrito_service.dart';
 import 'carrito_screen.dart';
+import '../services/user_service.dart';
 
 class PlatoDetalleScreen extends StatefulWidget {
   final Map<String, dynamic> plato;
@@ -13,8 +14,10 @@ class PlatoDetalleScreen extends StatefulWidget {
 
 class _PlatoDetalleScreenState extends State<PlatoDetalleScreen> {
 
-  Map<int, int> cantidades = {}; // id ingrediente → cantidad
+  Map<int, int> cantidades = {};
   double precioTotal = 0;
+
+  int index = 0; // 👈 para el navbar
 
   @override
   void initState() {
@@ -22,7 +25,6 @@ class _PlatoDetalleScreenState extends State<PlatoDetalleScreen> {
     precioTotal = double.parse(widget.plato["precio"].toString());
   }
 
-  // 🔥 RECALCULAR PRECIO
   void recalcularTotal() {
     double base = double.parse(widget.plato["precio"].toString());
     double extrasTotal = 0;
@@ -32,9 +34,7 @@ class _PlatoDetalleScreenState extends State<PlatoDetalleScreen> {
     for (var ing in ingredientes) {
       int id = ing["id"];
       double precio = double.parse(ing["precio"].toString());
-
       int cantidad = cantidades[id] ?? 0;
-
       extrasTotal += precio * cantidad;
     }
 
@@ -60,7 +60,6 @@ class _PlatoDetalleScreenState extends State<PlatoDetalleScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
 
-            // 🖼 IMAGEN
             Image.network(
               plato["imagen"],
               width: double.infinity,
@@ -70,21 +69,16 @@ class _PlatoDetalleScreenState extends State<PlatoDetalleScreen> {
 
             const SizedBox(height: 15),
 
-            // 🍽 NOMBRE
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Text(
                 plato["nombre"],
-                style: const TextStyle(
-                  fontSize: 22,
-                  fontWeight: FontWeight.bold,
-                ),
+                style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
               ),
             ),
 
             const SizedBox(height: 10),
 
-            // 💰 PRECIO DINÁMICO
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Text(
@@ -99,7 +93,6 @@ class _PlatoDetalleScreenState extends State<PlatoDetalleScreen> {
 
             const SizedBox(height: 15),
 
-            // 📝 DESCRIPCIÓN
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Text(
@@ -110,7 +103,6 @@ class _PlatoDetalleScreenState extends State<PlatoDetalleScreen> {
 
             const SizedBox(height: 15),
 
-            // 🏢 EMPRESA
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Text(
@@ -121,7 +113,6 @@ class _PlatoDetalleScreenState extends State<PlatoDetalleScreen> {
 
             const SizedBox(height: 20),
 
-            // 🔥 INGREDIENTES
             const Padding(
               padding: EdgeInsets.symmetric(horizontal: 16),
               child: Text(
@@ -134,7 +125,6 @@ class _PlatoDetalleScreenState extends State<PlatoDetalleScreen> {
               children: (ingredientes as List).map<Widget>((ing) {
 
                 int id = ing["id"];
-
                 cantidades[id] = cantidades[id] ?? 0;
 
                 return Padding(
@@ -144,9 +134,7 @@ class _PlatoDetalleScreenState extends State<PlatoDetalleScreen> {
                     children: [
 
                       Expanded(
-                        child: Text(
-                          "${ing["nombre"]} (+\$${ing["precio"]})",
-                        ),
+                        child: Text("${ing["nombre"]} (+\$${ing["precio"]})"),
                       ),
 
                       Row(
@@ -183,13 +171,11 @@ class _PlatoDetalleScreenState extends State<PlatoDetalleScreen> {
 
             const SizedBox(height: 25),
 
-            // 🔥 BOTONES
             Padding(
               padding: const EdgeInsets.all(16),
               child: Column(
                 children: [
 
-                  // 🛒 AGREGAR
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton(
@@ -198,11 +184,8 @@ class _PlatoDetalleScreenState extends State<PlatoDetalleScreen> {
                         List extrasSeleccionados = [];
 
                         cantidades.forEach((id, cantidad) {
-
                           if (cantidad > 0) {
-
                             final ingrediente = ingredientes.firstWhere((i) => i["id"] == id);
-
                             extrasSeleccionados.add({
                               "id": id,
                               "nombre": ingrediente["nombre"],
@@ -210,18 +193,12 @@ class _PlatoDetalleScreenState extends State<PlatoDetalleScreen> {
                               "cantidad": cantidad
                             });
                           }
-
                         });
 
-                        CarritoService.agregar(
-                          plato,
-                          extras: extrasSeleccionados,
-                        );
+                        CarritoService.agregar(plato, extras: extrasSeleccionados);
 
                         ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text("Agregado al carrito 🛒"),
-                          ),
+                          const SnackBar(content: Text("Agregado al carrito 🛒")),
                         );
                       },
                       style: ElevatedButton.styleFrom(
@@ -234,7 +211,6 @@ class _PlatoDetalleScreenState extends State<PlatoDetalleScreen> {
 
                   const SizedBox(height: 10),
 
-                  // ⚡ ORDENAR
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton(
@@ -243,11 +219,8 @@ class _PlatoDetalleScreenState extends State<PlatoDetalleScreen> {
                         List extrasSeleccionados = [];
 
                         cantidades.forEach((id, cantidad) {
-
                           if (cantidad > 0) {
-
                             final ingrediente = ingredientes.firstWhere((i) => i["id"] == id);
-
                             extrasSeleccionados.add({
                               "id": id,
                               "nombre": ingrediente["nombre"],
@@ -255,15 +228,10 @@ class _PlatoDetalleScreenState extends State<PlatoDetalleScreen> {
                               "cantidad": cantidad
                             });
                           }
-
                         });
 
                         CarritoService.limpiar();
-
-                        CarritoService.agregar(
-                          plato,
-                          extras: extrasSeleccionados,
-                        );
+                        CarritoService.agregar(plato, extras: extrasSeleccionados);
 
                         Navigator.push(
                           context,
@@ -288,6 +256,28 @@ class _PlatoDetalleScreenState extends State<PlatoDetalleScreen> {
 
           ],
         ),
+      ),
+
+      // 🔥 NAVBAR AQUÍ
+      bottomNavigationBar: BottomNavigationBar(
+        currentIndex: index,
+        selectedItemColor: Colors.blue,
+        onTap: (i) {
+          setState(() {
+            index = i;
+          });
+
+          if (i == 0) {
+            Navigator.pop(context); // volver al home
+          }
+          // puedes agregar navegación a favoritos, comunidad, etc aquí luego
+        },
+        items: const [
+          BottomNavigationBarItem(icon: Icon(Icons.home), label: "Inicio"),
+          BottomNavigationBarItem(icon: Icon(Icons.favorite), label: "Favoritos"),
+          BottomNavigationBarItem(icon: Icon(Icons.people), label: "Comunidad"),
+          BottomNavigationBarItem(icon: Icon(Icons.person), label: "Perfil"),
+        ],
       ),
     );
   }
