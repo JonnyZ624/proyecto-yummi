@@ -19,4 +19,11 @@ urlpatterns = [
 
     path('post/', crear_post),
     path('posts/', obtener_posts),
+
+    path('resena/', crear_resena),
+    path('resenas/<int:plato_id>/', obtener_resenas),
+    path('plato/<int:plato_id>/', obtener_plato),
+    path('favorito/check/<int:usuario_id>/<int:plato_id>/', es_favorito),
+    path('resena/', crear_resena),
+    path('resena/<int:plato_id>/', obtener_resenas),
 ]

@@ -7,6 +7,8 @@ import 'services/user_service.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
+  
+
   bool logged = await UserService.cargarSesion();
 
   runApp(MyApp(logged: logged));

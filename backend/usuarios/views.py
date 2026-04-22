@@ -1,5 +1,6 @@
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
+from .models import Resena
 from .models import (
     Usuario,
     Plato,
@@ -102,6 +103,8 @@ def login(request):
 @api_view(['GET'])
 def obtener_perfil(request, usuario_id):
     try:
+        print("🔍 ID RECIBIDO:", usuario_id)
+
         usuario = Usuario.objects.get(id=usuario_id)
 
         return Response({
@@ -114,7 +117,12 @@ def obtener_perfil(request, usuario_id):
         })
 
     except Usuario.DoesNotExist:
+        print("❌ USUARIO NO EXISTE CON ID:", usuario_id)
         return Response({"error": "Usuario no existe"}, status=404)
+
+    except Exception as e:
+        print("🔥 ERROR REAL EN PERFIL:", str(e))
+        return Response({"error": str(e)}, status=500)
 
 
 @api_view(['PUT'])
@@ -160,7 +168,7 @@ def obtener_platos(request):
             "precio": str(p.precio),
             "imagen": p.imagen,
             "descripcion": p.descripcion,
-            "empresa": p.empresa,
+            "empresa": p.empresa.nombre if p.empresa else None,
             "categoria": p.categoria,  # opcional pero útil
             "ingredientes": [
                 {
@@ -313,6 +321,134 @@ def obtener_posts(request):
             "usuario": p.usuario.nombre,
             "contenido": p.contenido,
             "fecha": p.fecha
+        })
+
+    return Response(data)
+
+
+
+
+@api_view(['POST'])
+def crear_resena(request):
+    usuario = Usuario.objects.get(id=request.data.get("usuario_id"))
+    plato = Plato.objects.get(id=request.data.get("plato_id"))
+
+    Resena.objects.create(
+        usuario=usuario,
+        plato=plato,
+        comentario=request.data.get("comentario"),
+        calificacion=request.data.get("calificacion", 5)
+    )
+
+    return Response({"message": "Reseña creada"})
+
+
+@api_view(['GET'])
+def obtener_resenas(request, plato_id):
+    resenas = Resena.objects.filter(plato_id=plato_id).order_by('-fecha')
+
+    data = []
+
+    for r in resenas:
+        data.append({
+            "usuario": r.usuario.nombre,
+            "comentario": r.comentario,
+            "calificacion": r.calificacion,
+            "fecha": r.fecha
+        })
+
+    return Response(data)
+
+
+
+
+@api_view(['GET'])
+def obtener_plato(request, plato_id):
+    try:
+        p = Plato.objects.get(id=plato_id)
+
+        return Response({
+            "id": p.id,
+            "nombre": p.nombre,
+            "precio": str(p.precio),
+            "imagen": p.imagen,
+            "descripcion": p.descripcion,
+            "empresa": p.empresa.nombre if p.empresa else None,
+            "ingredientes": [
+                {
+                    "id": i.id,
+                    "nombre": i.nombre,
+                    "precio": str(i.precio)
+                }
+                for i in p.ingredientes.all()
+            ]
+        })
+
+    except Plato.DoesNotExist:
+        return Response({"error": "No existe"}, status=404)
+
+
+
+@api_view(['GET'])
+def es_favorito(request, usuario_id, plato_id):
+    existe = Favorito.objects.filter(
+        usuario_id=usuario_id,
+        plato_id=plato_id
+    ).exists()
+
+    return Response({"favorito": existe})
+
+
+
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
+from .models import Resena, Usuario, Plato
+
+# =========================
+# ⭐ CREAR RESEÑA
+# =========================
+@api_view(['POST'])
+def crear_resena(request):
+    try:
+        usuario_id = request.data.get("usuario_id")
+        plato_id = request.data.get("plato_id")
+        comentario = request.data.get("comentario")
+        calificacion = int(request.data.get("calificacion", 5))  # 🔥 asegurar int
+
+        usuario = Usuario.objects.get(id=usuario_id)
+        plato = Plato.objects.get(id=plato_id)
+
+        # 🚫 evitar duplicados
+        if Resena.objects.filter(usuario=usuario, plato=plato).exists():
+            return Response({"error": "Ya hiciste una reseña"}, status=400)
+
+        Resena.objects.create(
+            usuario=usuario,
+            plato=plato,
+            comentario=comentario,
+            calificacion=calificacion
+        )
+
+        return Response({"success": True, "message": "Reseña creada"})
+
+    except Exception as e:
+        return Response({"success": False, "error": str(e)}, status=400)
+
+
+# =========================
+# ⭐ OBTENER RESEÑAS
+# =========================
+@api_view(['GET'])
+def obtener_resenas(request, plato_id):
+    resenas = Resena.objects.filter(plato_id=plato_id).order_by('-fecha')
+
+    data = []
+    for r in resenas:
+        data.append({
+            "usuario": r.usuario.nombre,
+            "comentario": r.comentario,
+            "calificacion": r.calificacion,
+            "fecha": r.fecha.strftime("%Y-%m-%d %H:%M")  # 🔥 mejor formato
         })
 
     return Response(data)

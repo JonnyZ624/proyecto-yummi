@@ -1,12 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:frontend/services/carrito_service.dart';
 import 'carrito_screen.dart';
-import '../services/user_service.dart';
+import 'package:frontend/services/favorito_service.dart';
+import 'package:frontend/services/resena_service.dart';
 
 class PlatoDetalleScreen extends StatefulWidget {
   final Map<String, dynamic> plato;
+  final VoidCallback? onBack;
 
-  const PlatoDetalleScreen({super.key, required this.plato});
+  const PlatoDetalleScreen({
+    super.key,
+    required this.plato,
+    this.onBack,
+  });
 
   @override
   State<PlatoDetalleScreen> createState() => _PlatoDetalleScreenState();
@@ -17,12 +23,38 @@ class _PlatoDetalleScreenState extends State<PlatoDetalleScreen> {
   Map<int, int> cantidades = {};
   double precioTotal = 0;
 
-  int index = 0; // 👈 para el navbar
+  bool esFavorito = false;
+
+  // ⭐ RESEÑAS
+  List resenas = [];
+  bool loadingResenas = true;
+
+  final TextEditingController comentarioCtrl = TextEditingController();
+  int rating = 5;
 
   @override
   void initState() {
     super.initState();
     precioTotal = double.parse(widget.plato["precio"].toString());
+
+    verificarFavorito();
+    cargarResenas();
+  }
+
+  void verificarFavorito() async {
+    bool existe = await FavoritoService.existe(widget.plato["id"]);
+    setState(() {
+      esFavorito = existe;
+    });
+  }
+
+  void cargarResenas() async {
+    final data = await ResenaService.obtener(widget.plato["id"]);
+
+    setState(() {
+      resenas = data;
+      loadingResenas = false;
+    });
   }
 
   void recalcularTotal() {
@@ -50,9 +82,66 @@ class _PlatoDetalleScreenState extends State<PlatoDetalleScreen> {
     final ingredientes = plato["ingredientes"] ?? [];
 
     return Scaffold(
+
       appBar: AppBar(
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () {
+            if (widget.onBack != null) {
+              widget.onBack!();
+            } else {
+              Navigator.pop(context);
+            }
+          },
+        ),
         title: Text(plato["nombre"]),
         backgroundColor: Colors.green,
+
+        actions: [
+
+          // ❤️ FAVORITO
+          IconButton(
+            icon: Icon(
+              esFavorito ? Icons.favorite : Icons.favorite_border,
+              color: esFavorito ? Colors.red : Colors.white,
+            ),
+            onPressed: () async {
+
+              if (esFavorito) {
+                await FavoritoService.eliminar(plato["id"]);
+              } else {
+                await FavoritoService.agregar(plato["id"]);
+              }
+
+              setState(() {
+                esFavorito = !esFavorito;
+              });
+
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(
+                    esFavorito
+                        ? "Agregado a favoritos ❤️"
+                        : "Eliminado de favoritos",
+                  ),
+                ),
+              );
+            },
+          ),
+
+          // 🛒 CARRITO
+          IconButton(
+            icon: const Icon(Icons.shopping_cart),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => const CarritoScreen(),
+                ),
+              );
+            },
+          ),
+        ],
       ),
 
       body: SingleChildScrollView(
@@ -60,6 +149,7 @@ class _PlatoDetalleScreenState extends State<PlatoDetalleScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
 
+            // 🖼 IMAGEN
             Image.network(
               plato["imagen"],
               width: double.infinity,
@@ -69,16 +159,21 @@ class _PlatoDetalleScreenState extends State<PlatoDetalleScreen> {
 
             const SizedBox(height: 15),
 
+            // 🍽 NOMBRE
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Text(
                 plato["nombre"],
-                style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+                style: const TextStyle(
+                  fontSize: 22,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
             ),
 
             const SizedBox(height: 10),
 
+            // 💰 PRECIO
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Text(
@@ -93,6 +188,7 @@ class _PlatoDetalleScreenState extends State<PlatoDetalleScreen> {
 
             const SizedBox(height: 15),
 
+            // 📝 DESCRIPCIÓN
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Text(
@@ -103,6 +199,7 @@ class _PlatoDetalleScreenState extends State<PlatoDetalleScreen> {
 
             const SizedBox(height: 15),
 
+            // 🏢 EMPRESA
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Text(
@@ -113,6 +210,7 @@ class _PlatoDetalleScreenState extends State<PlatoDetalleScreen> {
 
             const SizedBox(height: 20),
 
+            // 🔥 EXTRAS
             const Padding(
               padding: EdgeInsets.symmetric(horizontal: 16),
               child: Text(
@@ -171,11 +269,13 @@ class _PlatoDetalleScreenState extends State<PlatoDetalleScreen> {
 
             const SizedBox(height: 25),
 
+            // 🔥 BOTONES
             Padding(
               padding: const EdgeInsets.all(16),
               child: Column(
                 children: [
 
+                  // 🛒 AGREGAR
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton(
@@ -198,7 +298,9 @@ class _PlatoDetalleScreenState extends State<PlatoDetalleScreen> {
                         CarritoService.agregar(plato, extras: extrasSeleccionados);
 
                         ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text("Agregado al carrito 🛒")),
+                          const SnackBar(
+                            content: Text("Agregado al carrito 🛒"),
+                          ),
                         );
                       },
                       style: ElevatedButton.styleFrom(
@@ -211,6 +313,7 @@ class _PlatoDetalleScreenState extends State<PlatoDetalleScreen> {
 
                   const SizedBox(height: 10),
 
+                  // ⚡ ORDENAR
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton(
@@ -236,7 +339,7 @@ class _PlatoDetalleScreenState extends State<PlatoDetalleScreen> {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => const CarritoScreen(),
+                            builder: (_) => const CarritoScreen(),
                           ),
                         );
                       },
@@ -252,32 +355,103 @@ class _PlatoDetalleScreenState extends State<PlatoDetalleScreen> {
               ),
             ),
 
-            const SizedBox(height: 20),
+            // ⭐ RESEÑAS
+            const Padding(
+              padding: EdgeInsets.all(16),
+              child: Text(
+                "Reseñas ⭐",
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+            ),
 
+            loadingResenas
+                ? const Center(child: CircularProgressIndicator())
+                : resenas.isEmpty
+                    ? const Center(child: Text("Sin reseñas"))
+                    : Column(
+                        children: resenas.map<Widget>((r) {
+                          return ListTile(
+                            title: Text(r["usuario"]),
+                            subtitle: Text(r["comentario"]),
+                            trailing: Text("⭐ ${r["calificacion"]}"),
+                          );
+                        }).toList(),
+                      ),
+
+            // ✍️ NUEVA RESEÑA
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                children: [
+
+                  TextField(
+                    controller: comentarioCtrl,
+                    decoration: const InputDecoration(
+                      hintText: "Escribe tu reseña...",
+                    ),
+                  ),
+
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: List.generate(5, (i) {
+                      return IconButton(
+                        icon: Icon(
+                          i < rating ? Icons.star : Icons.star_border,
+                          color: Colors.amber,
+                        ),
+                        onPressed: () {
+                          setState(() {
+                            rating = i + 1;
+                          });
+                        },
+                      );
+                    }),
+                  ),
+
+                  ElevatedButton(
+  onPressed: () async {
+
+    if (comentarioCtrl.text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Escribe un comentario")),
+      );
+      return;
+    }
+
+    bool ok = await ResenaService.crear(
+      widget.plato["id"],
+      comentarioCtrl.text,
+      rating,
+    );
+
+    if (ok) {
+      comentarioCtrl.clear();
+
+      setState(() {
+        rating = 5;
+      });
+
+      cargarResenas();
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Reseña enviada ⭐")),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Ya hiciste una reseña ❌")),
+      );
+    }
+  },
+  child: const Text("Enviar reseña"),
+),
+
+                ],
+              ),
+            ),
+
+            const SizedBox(height: 20),
           ],
         ),
-      ),
-
-      // 🔥 NAVBAR AQUÍ
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: index,
-        selectedItemColor: Colors.blue,
-        onTap: (i) {
-          setState(() {
-            index = i;
-          });
-
-          if (i == 0) {
-            Navigator.pop(context); // volver al home
-          }
-          // puedes agregar navegación a favoritos, comunidad, etc aquí luego
-        },
-        items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.home), label: "Inicio"),
-          BottomNavigationBarItem(icon: Icon(Icons.favorite), label: "Favoritos"),
-          BottomNavigationBarItem(icon: Icon(Icons.people), label: "Comunidad"),
-          BottomNavigationBarItem(icon: Icon(Icons.person), label: "Perfil"),
-        ],
       ),
     );
   }

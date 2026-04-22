@@ -4,43 +4,45 @@ import 'carrito_screen.dart';
 
 class HomeScreen extends StatelessWidget {
   final String nombre;
+  final Function(String) onSelectCategoria;
 
- HomeScreen({super.key, required this.nombre});
+  HomeScreen({
+    super.key,
+    required this.nombre,
+    required this.onSelectCategoria,
+  });
 
- @override
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.green[50],
 
       appBar: AppBar(
-  backgroundColor: Colors.green,
-  title: const Text("Yumi Eats 🍃"),
-  centerTitle: true,
-
-  actions: [
-    IconButton(
-      icon: const Icon(Icons.shopping_cart),
-      onPressed: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => const CarritoScreen(),
+        backgroundColor: Colors.green,
+        title: const Text("Yumi Eats 🍃"),
+        centerTitle: true,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.shopping_cart),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const CarritoScreen(),
+                ),
+              );
+            },
           ),
-        );
-      },
-    ),
-  ],
-),
+        ],
+      ),
 
       body: Padding(
         padding: const EdgeInsets.all(16),
-
         child: SingleChildScrollView(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
 
-              // 👋 SALUDO
               Text(
                 "Hola $nombre 👋",
                 style: const TextStyle(
@@ -58,7 +60,6 @@ class HomeScreen extends StatelessWidget {
 
               const SizedBox(height: 20),
 
-              // 🍽 CATEGORÍAS
               GridView.builder(
                 itemCount: categorias.length,
                 shrinkWrap: true,
@@ -76,7 +77,6 @@ class HomeScreen extends StatelessWidget {
 
               const SizedBox(height: 20),
 
-              // ⭐ EMPRESAS DESTACADAS
               const Text(
                 "Empresas destacadas",
                 style: TextStyle(
@@ -97,7 +97,6 @@ class HomeScreen extends StatelessWidget {
                   },
                 ),
               ),
-
             ],
           ),
         ),
@@ -105,7 +104,6 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  // 📦 DATA (MEJOR ORGANIZADO)
   final List<Map<String, String>> categorias = [
     {"icono": "🍳", "titulo": "Desayuno"},
     {"icono": "🍛", "titulo": "Almuerzo"},
@@ -123,16 +121,10 @@ class HomeScreen extends StatelessWidget {
     "Burger King",
   ];
 
-  // 🍽 CATEGORÍA
   Widget categoria(BuildContext context, String icono, String titulo) {
     return GestureDetector(
       onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => CategoriaScreen(categoria: titulo),
-          ),
-        );
+        onSelectCategoria(titulo); // 🔥 CAMBIO IMPORTANTE
       },
       child: Container(
         decoration: BoxDecoration(
@@ -151,10 +143,7 @@ class HomeScreen extends StatelessWidget {
             children: [
               Text(icono, style: const TextStyle(fontSize: 40)),
               const SizedBox(height: 10),
-              Text(
-                titulo,
-                style: const TextStyle(fontSize: 16),
-              )
+              Text(titulo, style: const TextStyle(fontSize: 16))
             ],
           ),
         ),
@@ -162,7 +151,6 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  // 🏢 EMPRESA
   Widget empresa(String nombre) {
     return Container(
       width: 120,

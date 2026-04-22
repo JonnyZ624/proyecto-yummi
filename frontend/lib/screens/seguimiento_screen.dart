@@ -2,7 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:frontend/services/pedido_service.dart';
 
 class SeguimientoScreen extends StatefulWidget {
-  const SeguimientoScreen({super.key});
+
+  final Function()? onBack;
+
+  const SeguimientoScreen({super.key, this.onBack});
 
   @override
   State<SeguimientoScreen> createState() => _SeguimientoScreenState();
@@ -31,6 +34,12 @@ class _SeguimientoScreenState extends State<SeguimientoScreen> {
 
     return Scaffold(
       appBar: AppBar(
+        leading: widget.onBack != null
+            ? IconButton(
+                icon: const Icon(Icons.arrow_back),
+                onPressed: widget.onBack,
+              )
+            : null,
         title: const Text("Seguimiento"),
         backgroundColor: Colors.green,
       ),
@@ -42,7 +51,7 @@ class _SeguimientoScreenState extends State<SeguimientoScreen> {
 
                 const SizedBox(height: 20),
 
-                // 📍 MAPA (igual que tienes)
+                // 📍 MAPA
                 Container(
                   height: 200,
                   margin: const EdgeInsets.all(16),
@@ -55,7 +64,7 @@ class _SeguimientoScreenState extends State<SeguimientoScreen> {
                   ),
                 ),
 
-                // 🧾 DETALLE DEL PEDIDO
+                // 🧾 DETALLE
                 Expanded(
                   child: ListView(
                     children: [
@@ -77,7 +86,6 @@ class _SeguimientoScreenState extends State<SeguimientoScreen> {
                                   ),
                                 ),
 
-                                // 🔥 EXTRAS
                                 if (d["extras"].length > 0)
                                   Column(
                                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -109,7 +117,6 @@ class _SeguimientoScreenState extends State<SeguimientoScreen> {
 
                       const SizedBox(height: 20),
 
-                      // 🚚 INFO REPARTIDOR (puedes dejarlo fijo)
                       Container(
                         margin: const EdgeInsets.all(16),
                         padding: const EdgeInsets.all(16),

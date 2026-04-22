@@ -5,9 +5,9 @@ from .models import (
     Pedido,
     PedidoDetalle,
     Ingrediente,
-    PedidoDetalleIngrediente  # 🔥 IMPORTANTE
+    PedidoDetalleIngrediente,
+    Empresa
 )
-
 
 # =========================
 # INGREDIENTES EN PLATO
@@ -17,20 +17,28 @@ class IngredienteInline(admin.TabularInline):
     extra = 1
 
 
+# =========================
+# PLATO (UNIFICADO ✅)
+# =========================
+@admin.register(Plato)
 class PlatoAdmin(admin.ModelAdmin):
+    list_display = ("id", "nombre", "precio", "empresa")
+    list_filter = ("empresa", "categoria")
     inlines = [IngredienteInline]
+
+
+# =========================
+# EMPRESA
+# =========================
+@admin.register(Empresa)
+class EmpresaAdmin(admin.ModelAdmin):
+    list_display = ("id", "nombre")
 
 
 # =========================
 # USUARIO
 # =========================
 admin.site.register(Usuario)
-
-
-# =========================
-# PLATO
-# =========================
-admin.site.register(Plato, PlatoAdmin)
 
 
 # =========================

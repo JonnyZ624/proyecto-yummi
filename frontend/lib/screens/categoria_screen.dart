@@ -1,12 +1,20 @@
 import 'package:flutter/material.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-import 'plato_detalle_screen.dart';
 
 class CategoriaScreen extends StatefulWidget {
   final String categoria;
 
-  const CategoriaScreen({super.key, required this.categoria});
+  // 🔥 NUEVO
+  final Function(Map) onSelectPlato;
+  final Function() onBack;
+
+  const CategoriaScreen({
+    super.key,
+    required this.categoria,
+    required this.onSelectPlato,
+    required this.onBack,
+  });
 
   @override
   State<CategoriaScreen> createState() => _CategoriaScreenState();
@@ -30,16 +38,11 @@ class _CategoriaScreenState extends State<CategoriaScreen> {
 
     final response = await http.get(url);
 
-    print("STATUS: ${response.statusCode}");
-    print("BODY: ${response.body}");
-
     if (response.statusCode == 200) {
       setState(() {
         platos = jsonDecode(response.body);
         loading = false;
       });
-    } else {
-      print("Error cargando platos");
     }
   }
 
@@ -47,6 +50,11 @@ class _CategoriaScreenState extends State<CategoriaScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        // 🔥 BACK CONTROLADO POR MAIN
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: widget.onBack,
+        ),
         title: Text(widget.categoria),
         backgroundColor: Colors.green,
       ),
@@ -67,15 +75,10 @@ class _CategoriaScreenState extends State<CategoriaScreen> {
                   itemBuilder: (context, index) {
                     final plato = platos[index];
 
-                    // 🔥 AQUÍ ESTÁ EL CAMBIO IMPORTANTE
                     return GestureDetector(
                       onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => PlatoDetalleScreen(plato: plato),
-                          ),
-                        );
+                        // 🔥 CAMBIO IMPORTANTE
+                        widget.onSelectPlato(plato);
                       },
                       child: platoCard(
                         plato["nombre"],
