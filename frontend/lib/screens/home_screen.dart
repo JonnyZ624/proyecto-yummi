@@ -1,16 +1,42 @@
 import 'package:flutter/material.dart';
 import 'categoria_screen.dart';
 import 'carrito_screen.dart';
+import 'empresa_platos_screen.dart';
+import '../services/empresa_service.dart'; // 🔥 NUEVO
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
   final String nombre;
   final Function(String) onSelectCategoria;
 
-  HomeScreen({
+  const HomeScreen({
     super.key,
     required this.nombre,
     required this.onSelectCategoria,
   });
+
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+
+  List empresas = [];
+  bool loadingEmpresas = true;
+
+  @override
+  void initState() {
+    super.initState();
+    cargarEmpresas();
+  }
+
+  void cargarEmpresas() async {
+    final data = await EmpresaService.obtenerEmpresas();
+
+    setState(() {
+      empresas = data;
+      loadingEmpresas = false;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -44,7 +70,7 @@ class HomeScreen extends StatelessWidget {
             children: [
 
               Text(
-                "Hola $nombre 👋",
+                "Hola ${widget.nombre} 👋",
                 style: const TextStyle(
                   fontSize: 24,
                   fontWeight: FontWeight.bold,
@@ -87,16 +113,18 @@ class HomeScreen extends StatelessWidget {
 
               const SizedBox(height: 10),
 
-              SizedBox(
-                height: 120,
-                child: ListView.builder(
-                  scrollDirection: Axis.horizontal,
-                  itemCount: empresas.length,
-                  itemBuilder: (context, index) {
-                    return empresa(empresas[index]);
-                  },
-                ),
-              ),
+              loadingEmpresas
+                  ? const Center(child: CircularProgressIndicator())
+                  : SizedBox(
+                      height: 120,
+                      child: ListView.builder(
+                        scrollDirection: Axis.horizontal,
+                        itemCount: empresas.length,
+                        itemBuilder: (context, index) {
+                          return empresa(context, empresas[index]);
+                        },
+                      ),
+                    ),
             ],
           ),
         ),
@@ -113,18 +141,10 @@ class HomeScreen extends StatelessWidget {
     {"icono": "🍗", "titulo": "Proteínas"},
   ];
 
-  final List<String> empresas = [
-    "KFC",
-    "McDonald's",
-    "Subway",
-    "Domino's",
-    "Burger King",
-  ];
-
   Widget categoria(BuildContext context, String icono, String titulo) {
     return GestureDetector(
       onTap: () {
-        onSelectCategoria(titulo); // 🔥 CAMBIO IMPORTANTE
+        widget.onSelectCategoria(titulo);
       },
       child: Container(
         decoration: BoxDecoration(
@@ -151,25 +171,37 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  Widget empresa(String nombre) {
-    return Container(
-      width: 120,
-      margin: const EdgeInsets.only(right: 10),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(15),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.grey.shade300,
-            blurRadius: 5,
-          )
-        ],
-      ),
-      child: Center(
-        child: Text(
-          nombre,
-          textAlign: TextAlign.center,
-          style: const TextStyle(fontSize: 16),
+  // 🔥 EMPRESA REAL DESDE DJANGO
+  Widget empresa(BuildContext context, dynamic empresa) {
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => EmpresaPlatosScreen(
+              empresa: empresa["nombre"],
+            ),
+          ),
+        );
+      },
+      child: Container(
+        width: 120,
+        margin: const EdgeInsets.only(right: 10),
+        child: Column(
+          children: [
+
+            CircleAvatar(
+              radius: 35,
+              backgroundImage: NetworkImage(empresa["imagen"]),
+            ),
+
+            const SizedBox(height: 5),
+
+            Text(
+              empresa["nombre"],
+              textAlign: TextAlign.center,
+            )
+          ],
         ),
       ),
     );

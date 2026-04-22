@@ -452,3 +452,20 @@ def obtener_resenas(request, plato_id):
         })
 
     return Response(data)
+
+
+@api_view(['GET'])
+def obtener_empresas(request):
+    from .models import Empresa  # asegúrate que existe
+
+    empresas = Empresa.objects.all()
+
+    data = []
+    for e in empresas:
+        data.append({
+            "id": e.id,
+            "nombre": e.nombre,
+            "imagen": e.imagen
+        })
+
+    return Response(data)

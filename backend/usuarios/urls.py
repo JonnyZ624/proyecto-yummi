@@ -26,4 +26,5 @@ urlpatterns = [
     path('favorito/check/<int:usuario_id>/<int:plato_id>/', es_favorito),
     path('resena/', crear_resena),
     path('resena/<int:plato_id>/', obtener_resenas),
+    path('empresas/', obtener_empresas),
 ]
