@@ -16,7 +16,6 @@ class MainScreen extends StatefulWidget {
 }
 
 class _MainScreenState extends State<MainScreen> {
-
   int index = 0;
 
   String? categoriaSeleccionada;
@@ -25,7 +24,6 @@ class _MainScreenState extends State<MainScreen> {
 
   @override
   Widget build(BuildContext context) {
-
     Widget pantallaActual;
 
     // 🔥 DETALLE
@@ -83,15 +81,34 @@ class _MainScreenState extends State<MainScreen> {
           break;
 
         case 1:
-          pantallaActual = const FavoritosScreen();
+          // ✅ AQUÍ SE ARREGLA EL BOTÓN ATRÁS
+          pantallaActual = FavoritosScreen(
+            onBack: () {
+              setState(() {
+                index = 0; // 🔙 volver a Home
+              });
+            },
+          );
           break;
-
+          
         case 2:
-          pantallaActual = const ComunidadScreen();
+          pantallaActual = ComunidadScreen(
+            onBack: () {
+              setState(() {
+                index = 0;
+              });
+            },
+          );
           break;
 
         case 3:
-          pantallaActual = const PerfilScreen();
+          pantallaActual = PerfilScreen(
+            onBack: () {
+              setState(() {
+                index = 0;
+              });
+            },
+          );
           break;
 
         default:
@@ -101,11 +118,11 @@ class _MainScreenState extends State<MainScreen> {
 
     return Scaffold(
       body: pantallaActual,
-
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: index,
-        selectedItemColor: Colors.blue,
-        onTap: (i) {
+      bottomNavigationBar: NavigationBar(
+        backgroundColor: const Color(0xFF2C445C),
+        selectedIndex: index,
+        indicatorColor: Colors.white24,
+        onDestinationSelected: (i) {
           setState(() {
             index = i;
             categoriaSeleccionada = null;
@@ -113,11 +130,23 @@ class _MainScreenState extends State<MainScreen> {
             enSeguimiento = false;
           });
         },
-        items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.home), label: "Inicio"),
-          BottomNavigationBarItem(icon: Icon(Icons.favorite), label: "Favoritos"),
-          BottomNavigationBarItem(icon: Icon(Icons.people), label: "Comunidad"),
-          BottomNavigationBarItem(icon: Icon(Icons.person), label: "Perfil"),
+        destinations: const [
+          NavigationDestination(
+            icon: Icon(Icons.home, color: Colors.white),
+            label: "Inicio",
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.favorite, color: Colors.white),
+            label: "Favoritos",
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.people, color: Colors.white),
+            label: "Comunidad",
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.person, color: Colors.white),
+            label: "Perfil",
+          ),
         ],
       ),
     );

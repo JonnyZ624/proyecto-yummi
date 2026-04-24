@@ -4,7 +4,12 @@ import 'login_screen.dart';
 import 'editar_perfil_screen.dart';
 
 class PerfilScreen extends StatefulWidget {
-  const PerfilScreen({super.key});
+  final VoidCallback onBack; // 🔥 NUEVO
+
+  const PerfilScreen({
+    super.key,
+    required this.onBack,
+  });
 
   @override
   State<PerfilScreen> createState() => _PerfilScreenState();
@@ -37,6 +42,12 @@ class _PerfilScreenState extends State<PerfilScreen> {
       backgroundColor: Colors.grey[200],
 
       appBar: AppBar(
+        // 🔙 BOTÓN FUNCIONAL
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: widget.onBack, // 🔥 AQUÍ ESTÁ LA CLAVE
+        ),
+
         title: const Text("Mi perfil"),
         backgroundColor: Colors.white,
         foregroundColor: Colors.black,
@@ -52,7 +63,6 @@ class _PerfilScreenState extends State<PerfilScreen> {
 
                     const SizedBox(height: 20),
 
-                    // 🔥 CARD VERDE
                     Container(
                       margin: const EdgeInsets.symmetric(horizontal: 16),
                       padding: const EdgeInsets.all(16),
@@ -63,7 +73,6 @@ class _PerfilScreenState extends State<PerfilScreen> {
                       child: Row(
                         children: [
 
-                          // ✅ FOTO DINÁMICA
                           CircleAvatar(
                             radius: 30,
                             backgroundImage: NetworkImage(
@@ -96,7 +105,6 @@ class _PerfilScreenState extends State<PerfilScreen> {
                             ),
                           ),
 
-                          // ✏️ EDITAR
                           IconButton(
                             icon: const Icon(Icons.edit, color: Colors.white),
                             onPressed: () async {
@@ -106,8 +114,7 @@ class _PerfilScreenState extends State<PerfilScreen> {
                                   builder: (_) => const EditarPerfilScreen(),
                                 ),
                               );
-
-                              cargarPerfil(); // 🔥 refresca
+                              cargarPerfil();
                             },
                           )
 
@@ -117,7 +124,6 @@ class _PerfilScreenState extends State<PerfilScreen> {
 
                     const SizedBox(height: 20),
 
-                    // 🔥 OPCIONES
                     opcion("Administrar cuenta", Icons.person, () async {
                       await Navigator.push(
                         context,
@@ -129,11 +135,8 @@ class _PerfilScreenState extends State<PerfilScreen> {
                     }),
 
                     opcion("Historial de pedidos", Icons.receipt, () {}),
-
                     opcion("Favoritos", Icons.favorite, () {}),
-
                     opcion("Plan Premium", Icons.workspace_premium, () {}),
-
                     opcion("Mis reseñas", Icons.star, () {}),
 
                     opcion("Desconectar", Icons.logout, () async {
