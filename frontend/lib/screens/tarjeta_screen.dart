@@ -36,39 +36,86 @@ class _TarjetaScreenState extends State<TarjetaScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Datos de tarjeta"),
-        backgroundColor: Colors.green,
+        title: const Text(
+          "Tarjeta de crédito",
+          style: TextStyle(color: Colors.black),
+        ),
+        backgroundColor: Colors.white,
+        elevation: 0,
+        iconTheme: const IconThemeData(color: Colors.black),
       ),
 
-      body: Padding(
+      body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
           children: [
 
-            TextField(
-              controller: numero,
-              keyboardType: TextInputType.number,
-              decoration: const InputDecoration(labelText: "Número de tarjeta"),
+            /// 💳 IMAGEN DE TARJETA
+            Container(
+              width: double.infinity,
+              height: 250,
+              margin: const EdgeInsets.only(bottom: 20),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(12),
+                image: const DecorationImage(
+                  image: AssetImage("assets/images/tarjeta.png"),
+                  fit: BoxFit.cover,
+                ),
+              ),
             ),
 
-            TextField(
-              controller: nombre,
-              decoration: const InputDecoration(labelText: "Nombre del propietario"),
+            /// 📦 CARD DE FORMULARIO
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.grey[200],
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Column(
+                children: [
+
+                  campoTexto(
+                    controller: numero,
+                    label: "Número de tarjeta",
+                    isNumber: true,
+                  ),
+
+                  const SizedBox(height: 15),
+
+                  campoTexto(
+                    controller: nombre,
+                    label: "Nombre del propietario",
+                  ),
+
+                  const SizedBox(height: 15),
+
+                  Row(
+                    children: [
+                      Expanded(
+                        child: campoTexto(
+                          controller: fecha,
+                          label: "MM/YY",
+                        ),
+                      ),
+                      const SizedBox(width: 15),
+                      Expanded(
+                        child: campoTexto(
+                          controller: cvv,
+                          label: "CVV",
+                          isNumber: true,
+                        ),
+                      ),
+                    ],
+                  ),
+
+                ],
+              ),
             ),
 
-            TextField(
-              controller: fecha,
-              decoration: const InputDecoration(labelText: "MM/YY"),
-            ),
+            const SizedBox(height: 30),
 
-            TextField(
-              controller: cvv,
-              keyboardType: TextInputType.number,
-              decoration: const InputDecoration(labelText: "CVV"),
-            ),
-
-            const SizedBox(height: 20),
-
+            /// 🔘 BOTÓN
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
@@ -97,11 +144,43 @@ class _TarjetaScreenState extends State<TarjetaScreen> {
                     ),
                   );
                 },
-                child: const Text("Siguiente"),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.deepPurple,
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
+                child: const Text(
+                  "Siguiente",
+                  style: TextStyle(fontSize: 16,color: Colors.white,),
+                ),
               ),
             )
 
           ],
+        ),
+      ),
+    );
+  }
+
+  /// ✏️ INPUT ESTILIZADO (solo línea abajo)
+  Widget campoTexto({
+    required TextEditingController controller,
+    required String label,
+    bool isNumber = false,
+  }) {
+    return TextField(
+      controller: controller,
+      keyboardType: isNumber ? TextInputType.number : TextInputType.text,
+      decoration: InputDecoration(
+        labelText: label,
+        labelStyle: const TextStyle(color: Colors.black54),
+        enabledBorder: const UnderlineInputBorder(
+          borderSide: BorderSide(color: Colors.black26),
+        ),
+        focusedBorder: const UnderlineInputBorder(
+          borderSide: BorderSide(color: Colors.black),
         ),
       ),
     );

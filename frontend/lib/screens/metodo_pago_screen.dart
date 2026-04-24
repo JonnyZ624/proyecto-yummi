@@ -17,12 +17,17 @@ class _MetodoPagoScreenState extends State<MetodoPagoScreen> {
   @override
   Widget build(BuildContext context) {
 
-    double total = CarritoService.total(); // 🔥 TOTAL REAL
+    double total = CarritoService.total();
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Método de pago"),
-        backgroundColor: Colors.green,
+        title: const Text(
+          "Método de pago",
+          style: TextStyle(color: Colors.black),
+        ),
+        backgroundColor: Colors.white,
+        elevation: 0,
+        iconTheme: const IconThemeData(color: Colors.black), // 🔥 botón atrás negro
       ),
 
       body: Padding(
@@ -30,16 +35,11 @@ class _MetodoPagoScreenState extends State<MetodoPagoScreen> {
         child: Column(
           children: [
 
-            const Text(
-              "Selecciona tu método de pago",
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
+            const SizedBox(height: 10),
 
-            const SizedBox(height: 20),
-
-            radioMetodo("Efectivo"),
-            radioMetodo("Tarjeta crédito"),
-            radioMetodo("Tarjeta débito"),
+            metodoCard("Tarjeta crédito"),
+            metodoCard("Tarjeta débito"),
+            metodoCard("Efectivo"),
 
             const Spacer(),
 
@@ -55,7 +55,6 @@ class _MetodoPagoScreenState extends State<MetodoPagoScreen> {
                     return;
                   }
 
-                  // 🔥 FLUJO
                   if (metodoSeleccionado == "Efectivo") {
 
                     Navigator.push(
@@ -84,9 +83,15 @@ class _MetodoPagoScreenState extends State<MetodoPagoScreen> {
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.green,
-                  padding: const EdgeInsets.symmetric(vertical: 15),
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(30),
+                  ),
                 ),
-                child: const Text("Continuar"),
+                child: const Text(
+                  "Continuar",
+                  style: TextStyle(fontSize: 16),
+                ),
               ),
             )
 
@@ -96,16 +101,38 @@ class _MetodoPagoScreenState extends State<MetodoPagoScreen> {
     );
   }
 
-  Widget radioMetodo(String metodo) {
-    return RadioListTile(
-      title: Text(metodo),
-      value: metodo,
-      groupValue: metodoSeleccionado,
-      onChanged: (value) {
+  Widget metodoCard(String metodo) {
+    bool seleccionado = metodoSeleccionado == metodo;
+
+    return GestureDetector(
+      onTap: () {
         setState(() {
-          metodoSeleccionado = value!;
+          metodoSeleccionado = metodo;
         });
       },
+      child: Container(
+        width: double.infinity,
+        margin: const EdgeInsets.only(bottom: 15),
+        padding: const EdgeInsets.symmetric(vertical: 18),
+        decoration: BoxDecoration(
+          color: Colors.grey[200],
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: seleccionado ? Colors.green : Colors.transparent,
+            width: 2,
+          ),
+        ),
+        child: Center(
+          child: Text(
+            metodo,
+            style: const TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w500,
+              color: Colors.black87,
+            ),
+          ),
+        ),
+      ),
     );
   }
 }

@@ -11,12 +11,10 @@ class CarritoScreen extends StatefulWidget {
 
 class _CarritoScreenState extends State<CarritoScreen> {
 
-  // 🔥 CALCULAR TOTAL GENERAL
   double calcularTotal() {
     double total = 0;
 
     for (var p in CarritoService.carrito) {
-
       double precioBase = double.parse(p["precio"].toString());
 
       double extras = 0;
@@ -34,9 +32,7 @@ class _CarritoScreenState extends State<CarritoScreen> {
     return total;
   }
 
-  // 🔥 CALCULAR TOTAL POR PRODUCTO
   double calcularPrecioItem(Map plato) {
-
     double precioBase = double.parse(plato["precio"].toString());
 
     double extras = 0;
@@ -54,10 +50,15 @@ class _CarritoScreenState extends State<CarritoScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+
       appBar: AppBar(
-        title: const Text("Carrito 🛒"),
-        backgroundColor: Colors.green,
+        title: const Text("Carrito"),
+        backgroundColor: Colors.white,
+        foregroundColor: Colors.black,
+        elevation: 0,
       ),
+
+      backgroundColor: Colors.white,
 
       body: CarritoService.carrito.isEmpty
           ? const Center(child: Text("El carrito está vacío"))
@@ -70,193 +71,237 @@ class _CarritoScreenState extends State<CarritoScreen> {
                     itemCount: CarritoService.carrito.length,
                     itemBuilder: (context, index) {
 
-                      if (index >= CarritoService.carrito.length) {
-                        return const SizedBox();
-                      }
-
                       final plato = CarritoService.carrito[index];
-
-                      // 🔥 ASEGURAR VALORES
                       plato["cantidad"] ??= 1;
 
-                      return Card(
-                        margin: const EdgeInsets.all(8),
-                        child: Padding(
-                          padding: const EdgeInsets.all(10),
-                          child: Row(
-                            children: [
+                      return Container(
+                        margin: const EdgeInsets.symmetric(
+                            horizontal: 16, vertical: 8),
+                        padding: const EdgeInsets.all(10),
+                        decoration: BoxDecoration(
+                          color: Colors.grey.shade100,
+                          borderRadius: BorderRadius.circular(15),
+                        ),
+                        child: Row(
+                          children: [
 
-                              Image.network(
+                            ClipRRect(
+                              borderRadius: BorderRadius.circular(10),
+                              child: Image.network(
                                 plato["imagen"],
-                                width: 60,
-                                height: 60,
+                                width: 70,
+                                height: 70,
                                 fit: BoxFit.cover,
                               ),
+                            ),
 
-                              const SizedBox(width: 10),
+                            const SizedBox(width: 10),
 
-                              // INFO
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment:
+                                    CrossAxisAlignment.start,
+                                children: [
 
-                                    Text(
-                                      plato["nombre"],
-                                      style: const TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                      ),
+                                  Text(
+                                    plato["nombre"],
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 13,
+                                    ),
+                                  ),
+
+                                  const SizedBox(height: 4),
+
+                                  Text(
+                                    "\$ ${calcularPrecioItem(plato).toStringAsFixed(2)}",
+                                    style: const TextStyle(
+                                      color: Colors.green,
+                                      fontSize: 13,
+                                    ),
+                                  ),
+
+                                  if (plato["extras"] != null)
+                                    Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children:
+                                          plato["extras"].map<Widget>((e) {
+                                        return Text(
+                                          "+ ${e["nombre"]} (\$${e["precio"]})",
+                                          style: const TextStyle(
+                                              fontSize: 11),
+                                        );
+                                      }).toList(),
                                     ),
 
-                                    Text(
-                                      "\$ ${calcularPrecioItem(plato).toStringAsFixed(2)}",
-                                      style: const TextStyle(
-                                        color: Colors.green,
-                                      ),
-                                    ),
+                                  const SizedBox(height: 5),
 
-                                    // 🔥 EXTRAS
-                                    if (plato["extras"] != null)
-                                      Column(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
-                                        children: plato["extras"].map<Widget>((e) {
-                                          return Text(
-                                            "+ ${e["nombre"]} (\$${e["precio"]})",
-                                            style: const TextStyle(fontSize: 12),
-                                          );
-                                        }).toList(),
-                                      ),
+                                  Row(
+                                    children: [
 
-                                    // 🔥 CONTROLES
-                                    Row(
-                                      children: [
-
-                                        IconButton(
-                                          icon: const Icon(Icons.remove),
+                                      Container(
+                                        decoration: BoxDecoration(
+                                          color: Colors.purple,
+                                          borderRadius:
+                                              BorderRadius.circular(4),
+                                        ),
+                                        child: IconButton(
+                                          icon: const Icon(Icons.remove,
+                                              color: Colors.white,
+                                              size: 16),
                                           onPressed: () {
-
                                             setState(() {
-
-                                              int cantidad = plato["cantidad"] ?? 1;
+                                              int cantidad =
+                                                  plato["cantidad"] ?? 1;
 
                                               if (cantidad > 1) {
-                                                plato["cantidad"] = cantidad - 1;
+                                                plato["cantidad"] =
+                                                    cantidad - 1;
                                               } else {
-                                                CarritoService.eliminar(index);
+                                                CarritoService
+                                                    .eliminar(index);
                                               }
-
                                             });
                                           },
                                         ),
+                                      ),
 
-                                        Text("${plato["cantidad"]}"),
+                                      const SizedBox(width: 8),
 
-                                        IconButton(
-                                          icon: const Icon(Icons.add),
+                                      Text("${plato["cantidad"]}"),
+
+                                      const SizedBox(width: 8),
+
+                                      Container(
+                                        decoration: BoxDecoration(
+                                          color: Colors.purple,
+                                          borderRadius:
+                                              BorderRadius.circular(4),
+                                        ),
+                                        child: IconButton(
+                                          icon: const Icon(Icons.add,
+                                              color: Colors.white,
+                                              size: 16),
                                           onPressed: () {
-
                                             setState(() {
                                               plato["cantidad"] =
-                                                  (plato["cantidad"] ?? 1) + 1;
+                                                  (plato["cantidad"] ??
+                                                          1) +
+                                                      1;
                                             });
-
                                           },
                                         ),
+                                      ),
 
-                                      ],
-                                    ),
-
-                                  ],
-                                ),
+                                    ],
+                                  ),
+                                ],
                               ),
+                            ),
 
-                              // ❌ ELIMINAR
-                              IconButton(
-                                icon: const Icon(Icons.delete, color: Colors.red),
-                                onPressed: () {
-                                  setState(() {
-                                    CarritoService.eliminar(index);
-                                  });
-                                },
-                              ),
-
-                            ],
-                          ),
+                            IconButton(
+                              icon: const Icon(Icons.delete,
+                                  color: Colors.red),
+                              onPressed: () {
+                                setState(() {
+                                  CarritoService.eliminar(index);
+                                });
+                              },
+                            ),
+                          ],
                         ),
                       );
                     },
                   ),
                 ),
 
-                // 💰 TOTAL
-                Padding(
-                  padding: const EdgeInsets.all(16),
+                // 💰 ORDEN MEJORADO
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 20, vertical: 20), // 👈 más grande
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade200,
+                  ),
                   child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
 
-                      Text(
-                        "Total: \$ ${calcularTotal().toStringAsFixed(2)}",
-                        style: const TextStyle(
-                          fontSize: 20,
+                      const Text(
+                        "Orden",
+                        style: TextStyle(
+                          fontSize: 18, // 👈 más grande
                           fontWeight: FontWeight.bold,
+                          color: Colors.purple,
                         ),
                       ),
 
-                      const SizedBox(height: 10),
+                      const SizedBox(height: 15),
 
-                      // 🧹 LIMPIAR
-                      SizedBox(
-                        width: double.infinity,
+                      filaPrecio("Subtotal", calcularTotal()),
+                      filaPrecio("Delivery", 0),
+
+                      const Divider(height: 25),
+
+                      filaPrecio("Total", calcularTotal(), bold: true),
+
+                      const SizedBox(height: 20),
+
+                      Center(
                         child: ElevatedButton(
                           onPressed: () {
-                            setState(() {
-                              CarritoService.limpiar();
-                            });
-                          },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.grey,
-                          ),
-                          child: const Text("Vaciar carrito"),
-                        ),
-                      ),
-
-                      const SizedBox(height: 10),
-
-                      // 💳 COMPRAR
-                      SizedBox(
-                        width: double.infinity,
-                        child: ElevatedButton(
-                          onPressed: () {
-
-                            if (CarritoService.carrito.isEmpty) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                  content: Text("Carrito vacío ❌"),
-                                ),
-                              );
-                              return;
-                            }
-
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (context) => const MetodoPagoScreen(),
+                                builder: (context) =>
+                                    const MetodoPagoScreen(),
                               ),
                             );
                           },
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.green,
+                            backgroundColor: Colors.purple,
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 40, vertical: 12),
                           ),
-                          child: const Text("Comprar"),
+                          child: const Text(
+                            "Procesar el pago",
+                            style: TextStyle(
+                              color: Colors.white, // 👈 blanco
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
                         ),
                       ),
-
                     ],
                   ),
-                )
-
+                ),
               ],
             ),
+    );
+  }
+
+  Widget filaPrecio(String titulo, double valor,
+      {bool bold = false}) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 6), // 👈 más espacio
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(
+            titulo,
+            style: const TextStyle(fontSize: 15), // 👈 más grande
+          ),
+          Text(
+            "\$${valor.toStringAsFixed(2)}",
+            style: TextStyle(
+              fontSize: 15,
+              fontWeight:
+                  bold ? FontWeight.bold : FontWeight.normal,
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

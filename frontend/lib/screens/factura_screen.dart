@@ -18,7 +18,6 @@ class FacturaScreen extends StatefulWidget {
 }
 
 class _FacturaScreenState extends State<FacturaScreen> {
-
   final usuario = TextEditingController();
   final ci = TextEditingController();
   final ubicacion = TextEditingController();
@@ -35,101 +34,71 @@ class _FacturaScreenState extends State<FacturaScreen> {
 
   @override
   Widget build(BuildContext context) {
-
     return Scaffold(
-      resizeToAvoidBottomInset: true, // 🔥 evita errores con teclado
+      resizeToAvoidBottomInset: true,
+      backgroundColor: const Color(0xfff5f5f5),
 
       appBar: AppBar(
-        title: const Text("Datos de factura"),
-        backgroundColor: Colors.green,
+        title: const Text(
+          "Datos de factura",
+          style: TextStyle(color: Colors.black),
+        ),
+        backgroundColor: const Color(0xfff5f5f5),
+        elevation: 0,
+        iconTheme: const IconThemeData(color: Colors.black),
       ),
 
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(20),
         child: Column(
           children: [
 
-            // 💳 RESUMEN
-            Card(
-              elevation: 3,
-              child: Padding(
-                padding: const EdgeInsets.all(12),
-                child: Column(
-                  children: [
-                    Text(
-                      "Método: ${widget.metodo}",
-                      style: const TextStyle(fontSize: 16),
+            // RESUMEN
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    "Método: ${widget.metodo}",
+                    style: const TextStyle(
+                      fontSize: 14,
+                      color: Colors.black54,
                     ),
-
-                    const SizedBox(height: 5),
-
-                    Text(
-                      "Total: \$${widget.total.toStringAsFixed(2)}", // ✅ CORREGIDO
-                      style: const TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 18,
-                      ),
+                  ),
+                  const SizedBox(height: 5),
+                  Text(
+                    "Total: \$${widget.total.toStringAsFixed(2)}",
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w600,
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
             ),
 
-            const SizedBox(height: 20),
+            const SizedBox(height: 30),
 
-            // 👤 NOMBRE
-            TextField(
-              controller: usuario,
-              decoration: const InputDecoration(
-                labelText: "Nombre",
-                border: OutlineInputBorder(),
-              ),
-            ),
+            // CAMPOS
+            _input(usuario, "Usuario"),
+            _input(ci, "C.I / RUC", isNumber: true),
+            _input(ubicacion, "Ubicación"),
+            _input(telefono, "Teléfono", isPhone: true),
 
-            const SizedBox(height: 10),
+            const SizedBox(height: 40),
 
-            // 🆔 CI
-            TextField(
-              controller: ci,
-              keyboardType: TextInputType.number,
-              decoration: const InputDecoration(
-                labelText: "CI",
-                border: OutlineInputBorder(),
-              ),
-            ),
-
-            const SizedBox(height: 10),
-
-            // 📍 UBICACIÓN
-            TextField(
-              controller: ubicacion,
-              decoration: const InputDecoration(
-                labelText: "Ubicación",
-                border: OutlineInputBorder(),
-              ),
-            ),
-
-            const SizedBox(height: 10),
-
-            // 📞 TELÉFONO
-            TextField(
-              controller: telefono,
-              keyboardType: TextInputType.phone,
-              decoration: const InputDecoration(
-                labelText: "Teléfono",
-                border: OutlineInputBorder(),
-              ),
-            ),
-
-            const SizedBox(height: 20),
-
-            // ✅ BOTÓN CONFIRMAR
+            // BOTÓN
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
                 onPressed: () async {
 
-                  // 🔥 VALIDACIÓN
                   if (usuario.text.isEmpty ||
                       ci.text.isEmpty ||
                       ubicacion.text.isEmpty ||
@@ -143,7 +112,6 @@ class _FacturaScreenState extends State<FacturaScreen> {
                     return;
                   }
 
-                  // 🚀 ENVIAR PEDIDO
                   bool ok = await PedidoService.enviarPedido(
                     widget.metodo,
                     usuario.text,
@@ -153,11 +121,8 @@ class _FacturaScreenState extends State<FacturaScreen> {
                   );
 
                   if (ok) {
-
-                    // 🧹 LIMPIAR
                     CarritoService.limpiar();
 
-                    // ✅ IR A PAGO EXITOSO
                     Navigator.pushReplacement(
                       context,
                       MaterialPageRoute(
@@ -166,24 +131,53 @@ class _FacturaScreenState extends State<FacturaScreen> {
                     );
 
                   } else {
-
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(
                         content: Text("Error al confirmar pedido ❌"),
                       ),
                     );
-
                   }
                 },
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.green,
-                  padding: const EdgeInsets.symmetric(vertical: 15),
+                  backgroundColor: const Color(0xff6C2BD9),
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  elevation: 0,
                 ),
-                child: const Text("Confirmar"),
+                child: const Text(
+                  "Pedir",
+                  style: TextStyle(fontSize: 16),
+                ),
               ),
-            )
-
+            ),
           ],
+        ),
+      ),
+    );
+  }
+
+  Widget _input(TextEditingController controller, String label,
+      {bool isNumber = false, bool isPhone = false}) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 20),
+      child: TextField(
+        controller: controller,
+        keyboardType: isNumber
+            ? TextInputType.number
+            : isPhone
+                ? TextInputType.phone
+                : TextInputType.text,
+        decoration: InputDecoration(
+          labelText: label,
+          labelStyle: const TextStyle(color: Colors.black54),
+          enabledBorder: const UnderlineInputBorder(
+            borderSide: BorderSide(color: Colors.black26),
+          ),
+          focusedBorder: const UnderlineInputBorder(
+            borderSide: BorderSide(color: Colors.black),
+          ),
         ),
       ),
     );

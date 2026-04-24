@@ -4,7 +4,7 @@ import 'login_screen.dart';
 import 'editar_perfil_screen.dart';
 
 class PerfilScreen extends StatefulWidget {
-  final VoidCallback onBack; // 🔥 NUEVO
+  final VoidCallback onBack;
 
   const PerfilScreen({
     super.key,
@@ -39,15 +39,13 @@ class _PerfilScreenState extends State<PerfilScreen> {
   Widget build(BuildContext context) {
 
     return Scaffold(
-      backgroundColor: Colors.grey[200],
+      backgroundColor: Colors.white, // 👈 fondo blanco como diseño
 
       appBar: AppBar(
-        // 🔙 BOTÓN FUNCIONAL
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
-          onPressed: widget.onBack, // 🔥 AQUÍ ESTÁ LA CLAVE
+          onPressed: widget.onBack,
         ),
-
         title: const Text("Mi perfil"),
         backgroundColor: Colors.white,
         foregroundColor: Colors.black,
@@ -63,12 +61,13 @@ class _PerfilScreenState extends State<PerfilScreen> {
 
                     const SizedBox(height: 20),
 
+                    // 🟩 CARD PERFIL (más limpia)
                     Container(
                       margin: const EdgeInsets.symmetric(horizontal: 16),
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
-                        color: Colors.green,
-                        borderRadius: BorderRadius.circular(15),
+                        color: const Color(0xFF5A8F1C), // verde más elegante
+                        borderRadius: BorderRadius.circular(12),
                       ),
                       child: Row(
                         children: [
@@ -97,9 +96,13 @@ class _PerfilScreenState extends State<PerfilScreen> {
                                     fontWeight: FontWeight.bold,
                                   ),
                                 ),
+                                const SizedBox(height: 4),
                                 Text(
                                   perfil!["email"] ?? "",
-                                  style: const TextStyle(color: Colors.white70),
+                                  style: const TextStyle(
+                                    color: Colors.white70,
+                                    fontSize: 13,
+                                  ),
                                 ),
                               ],
                             ),
@@ -117,13 +120,13 @@ class _PerfilScreenState extends State<PerfilScreen> {
                               cargarPerfil();
                             },
                           )
-
                         ],
                       ),
                     ),
 
-                    const SizedBox(height: 20),
+                    const SizedBox(height: 25),
 
+                    // 📄 OPCIONES
                     opcion("Administrar cuenta", Icons.person, () async {
                       await Navigator.push(
                         context,
@@ -148,25 +151,47 @@ class _PerfilScreenState extends State<PerfilScreen> {
                         (route) => false,
                       );
                     }),
-
                   ],
                 ),
     );
   }
 
+  // 🔥 NUEVO ESTILO MINIMALISTA
   Widget opcion(String titulo, IconData icono, VoidCallback onTap) {
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-      child: ListTile(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(10),
+    return Column(
+      children: [
+
+        InkWell(
+          onTap: onTap,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            child: Row(
+              children: [
+
+                Icon(icono, color: Colors.grey),
+
+                const SizedBox(width: 15),
+
+                Expanded(
+                  child: Text(
+                    titulo,
+                    style: const TextStyle(fontSize: 14),
+                  ),
+                ),
+
+                const Icon(Icons.arrow_forward_ios,
+                    size: 14, color: Colors.grey),
+              ],
+            ),
+          ),
         ),
-        tileColor: Colors.white,
-        leading: Icon(icono, color: Colors.grey),
-        title: Text(titulo),
-        trailing: const Icon(Icons.arrow_forward_ios, size: 16),
-        onTap: onTap,
-      ),
+
+        // línea divisoria suave
+        const Padding(
+          padding: EdgeInsets.symmetric(horizontal: 16),
+          child: Divider(height: 1, color: Colors.grey),
+        ),
+      ],
     );
   }
 }
