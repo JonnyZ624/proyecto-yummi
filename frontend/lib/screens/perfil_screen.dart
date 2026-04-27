@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import '../services/user_service.dart';
 import 'login_screen.dart';
 import 'editar_perfil_screen.dart';
+import 'onboarding_screen.dart';
+import 'package:frontend/main.dart';
 
 class PerfilScreen extends StatefulWidget {
   final VoidCallback onBack;
@@ -146,10 +148,12 @@ class _PerfilScreenState extends State<PerfilScreen> {
                       await UserService.logout();
 
                       Navigator.pushAndRemoveUntil(
-                        context,
-                        MaterialPageRoute(builder: (_) => const LoginScreen()),
-                        (route) => false,
-                      );
+  context,
+  MaterialPageRoute(
+    builder: (_) => OnboardingWrapper(logged: false),
+  ),
+  (route) => false,
+);
                     }),
                   ],
                 ),
